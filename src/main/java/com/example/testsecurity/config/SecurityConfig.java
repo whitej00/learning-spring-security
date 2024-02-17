@@ -20,14 +20,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
 
-        http.authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/login").permitAll()
+        http.
+                authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/loginProc", "/join", "joinProc").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 );
 
-        http.formLogin((auth) -> auth.loginPage("/login")
+        http.
+                formLogin(auth -> auth.loginPage("/login")
                 .loginProcessingUrl("/loginProc")
                 .permitAll()
         );
@@ -36,7 +38,17 @@ public class SecurityConfig {
          * csrf 적용시 form 전송에 csrf token이 필요함.
          * 현재 개발 환경에서만 disable
          * */
-        http.csrf((auth) -> auth.disable());
+//        http.
+//                csrf((auth) -> auth.disable());
+
+        http.
+                sessionManagement(auth -> auth
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(true));
+
+        http
+                .sessionManagement(auth -> auth
+                        .sessionFixation().changeSessionId());
 
         return http.build();
     }
